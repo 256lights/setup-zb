@@ -4,14 +4,18 @@
  * SPDX-License-Identifier: MIT
  */
 
+import crypto from 'node:crypto';
 import child_process from 'node:child_process';
 import fs from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import process from 'node:process';
 import path from 'node:path';
 
 import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
 import { downloadTool, extractTar, extractZip } from '@actions/tool-cache';
+
+import { serveLogFilePathKey, servePIDKey } from './shared';
 
 interface Release {
   tagName: string;
@@ -54,6 +58,12 @@ function archiveBaseName(name: string): string {
   return name.match(/^(.*?)(?:\.(?:zip|tar\.gz|tar\.bz2))?$/)![1];
 }
 
+function temporaryFileName(prefix: string, suffix: string): string {
+  const name = prefix + crypto.randomBytes(8).toString('base64url') + suffix;
+  return path.join(tmpdir(), name);
+
+}
+
 function exec(command: string, args: readonly string[]): Promise<number> {
   const subprocess = child_process.spawn(command, args, { stdio: 'inherit' });
   return new Promise((resolve, reject) => {
@@ -69,6 +79,39 @@ function exec(command: string, args: readonly string[]): Promise<number> {
       }
     })
   });
+}
+
+/**
+ * Start a process that will potentially remain running after this process exits.
+ * @returns process PID
+ */
+async function startDaemon(command: string, args: readonly string[], logPath: string): Promise<number> {
+  const flag = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_NOFOLLOW;
+  const logFile = await fs.open(logPath, flag);
+  try {
+    const logFileStream = logFile.createWriteStream();
+    const subprocess = child_process.spawn(command, args, {
+      detached: true,
+      stdio: [null, logFileStream, logFileStream],
+    });
+    return new Promise((resolve, reject) => {
+      subprocess.on('error', (err) => {
+        reject(err);
+      });
+
+      subprocess.on('spawn', () => {
+        if (subprocess.pid === undefined) {
+          reject(new Error(`no pid after ${path.basename(command)} spawned`));
+          return;
+        }
+
+        subprocess.unref();
+        resolve(subprocess.pid);
+      })
+    });
+  } finally {
+    await logFile.close();
+  }
 }
 
 (async () => {
@@ -156,6 +199,25 @@ function exec(command: string, args: readonly string[]): Promise<number> {
   for (const binPath of zbBins) {
     if (binPath) {
       core.addPath(binPath);
+    }
+  }
+
+  if (core.getBooleanInput('zb-serve') && zbBins[0]) {
+    const logFilePath = temporaryFileName('zb-serve-', '.txt');
+    let pid: number | undefined;
+    try {
+      pid = await startDaemon(path.join(zbBins[0], 'zb'), [
+        'serve',
+      ], logFilePath);
+    } catch (err) {
+      core.error(typeof err === 'string' || err instanceof Error ?
+        err :
+        Object.prototype.toString.call(err));
+    }
+    if (pid) {
+      core.info(`Started zb serve with PID ${pid}`)
+      core.saveState(servePIDKey, pid);
+      core.saveState(serveLogFilePathKey, logFilePath);
     }
   }
 })();
