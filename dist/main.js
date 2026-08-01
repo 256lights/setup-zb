@@ -21725,6 +21725,7 @@ var require_semver2 = __commonJS({
 });
 
 // src/main.ts
+var import_node_child_process = __toESM(require("node:child_process"));
 var import_promises = __toESM(require("node:fs/promises"));
 var import_node_process = __toESM(require("node:process"));
 var import_node_path = __toESM(require("node:path"));
@@ -27971,6 +27972,21 @@ function extractArchive(file, name) {
 function archiveBaseName(name) {
   return name.match(/^(.*?)(?:\.(?:zip|tar\.gz|tar\.bz2))?$/)[1];
 }
+function exec2(command, args) {
+  const subprocess = import_node_child_process.default.spawn(command, args, { stdio: "inherit" });
+  return new Promise((resolve2, reject) => {
+    subprocess.on("error", (err) => {
+      reject(err);
+    });
+    subprocess.on("close", (exitCode, signal) => {
+      if (exitCode !== null) {
+        resolve2(exitCode);
+      } else if (signal !== null) {
+        reject(new Error(`${import_node_path.default.basename(command)} terminated from ${signal}`));
+      }
+    });
+  });
+}
 (async () => {
   const octokit = getOctokit(getInput("github-token", { required: true }));
   const version = getInput("zb-version");
@@ -28018,7 +28034,7 @@ function archiveBaseName(name) {
     return extractArchive(zbArchivePath, asset.name);
   });
   const installerPath = import_node_path.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "install");
-  await group("Running installer", () => exec(installerPath, [
+  await group("Running installer", () => exec2(installerPath, [
     "--single-user",
     "--no-systemd",
     "--no-launchd"

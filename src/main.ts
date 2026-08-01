@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
+import child_process from 'node:child_process';
 import fs from 'node:fs/promises';
 import process from 'node:process';
 import path from 'node:path';
 
 import * as core from '@actions/core';
-import { exec } from '@actions/exec';
 import { getOctokit } from '@actions/github';
 import { downloadTool, extractTar, extractZip } from '@actions/tool-cache';
 
@@ -52,6 +52,23 @@ function extractArchive(file: string, name?: string): Promise<string> {
 
 function archiveBaseName(name: string): string {
   return name.match(/^(.*?)(?:\.(?:zip|tar\.gz|tar\.bz2))?$/)![1];
+}
+
+function exec(command: string, args: readonly string[]): Promise<number> {
+  const subprocess = child_process.spawn(command, args, { stdio: 'inherit' });
+  return new Promise((resolve, reject) => {
+    subprocess.on('error', (err) => {
+      reject(err);
+    });
+
+    subprocess.on('close', (exitCode, signal) => {
+      if (exitCode !== null) {
+        resolve(exitCode);
+      } else if (signal !== null) {
+        reject(new Error(`${path.basename(command)} terminated from ${signal}`));
+      }
+    })
+  });
 }
 
 (async () => {
