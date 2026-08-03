@@ -19343,13 +19343,10 @@ async function shutDownServer(pid) {
     return;
   }
   const abort = new AbortController();
-  const exitPromise = waitForProcessToExit(pid, abort.signal);
-  const waitPromise = sleep(30 * 60 * 1e3, abort.signal);
+  const exitPromise = waitForProcessToExit(pid, abort.signal).then(() => true, () => null);
+  const waitPromise = sleep(30 * 60 * 1e3, abort.signal).then(() => false, () => null);
   try {
-    const finished = await Promise.race([
-      exitPromise.then(() => true),
-      waitPromise.then(() => false)
-    ]);
+    const finished = await Promise.race([exitPromise, waitPromise]);
     if (finished) {
       return;
     }
@@ -19361,9 +19358,8 @@ async function shutDownServer(pid) {
     await exitPromise;
   } finally {
     abort.abort();
-    await Promise.all([exitPromise.catch(() => {
-    }), waitPromise.catch(() => {
-    })]);
+    await Promise.allSettled([exitPromise, waitPromise]).catch(() => {
+    });
   }
 }
 (async () => {
