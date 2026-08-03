@@ -96,7 +96,7 @@ async function startDaemon(command: string, args: readonly string[], logPath: st
       detached: true,
       stdio: [null, logFileStream, logFileStream],
     });
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       subprocess.on('error', (err) => {
         reject(err);
       });
@@ -112,7 +112,9 @@ async function startDaemon(command: string, args: readonly string[], logPath: st
       })
     });
   } finally {
-    await logFile.close();
+    try {
+      await logFile.close();
+    } catch {}
   }
 }
 
@@ -172,7 +174,7 @@ async function startDaemon(command: string, args: readonly string[], logPath: st
 
   const zbExtractedFolderPath = await core.group(`Downloading ${asset.downloadUrl}`, async () => {
     const zbArchivePath = await downloadTool(asset.downloadUrl);
-    return extractArchive(zbArchivePath, asset.name);
+    return await extractArchive(zbArchivePath, asset.name);
   });
 
   const useRoot = core.getBooleanInput('use-root');

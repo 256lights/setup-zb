@@ -19326,15 +19326,28 @@ function sleep(delay, abortSignal) {
     }, delay);
   });
 }
-async function waitForProcessToExit(pid, abortSignal) {
-  for (; ; ) {
-    try {
-      import_node_process.default.kill(pid, 0);
-    } catch {
-      return;
+function waitForProcessToExit(pid, abortSignal) {
+  return new Promise((resolve, reject) => {
+    let id;
+    const abortListener = () => {
+      clearInterval(id);
+      reject(abortSignal?.reason);
+    };
+    if (abortSignal) {
+      abortSignal.addEventListener("abort", abortListener);
     }
-    sleep(500, abortSignal);
-  }
+    id = setInterval(() => {
+      try {
+        import_node_process.default.kill(pid, 0);
+      } catch {
+        if (abortSignal) {
+          abortSignal.removeEventListener("abort", abortListener);
+        }
+        clearInterval(id);
+        resolve();
+      }
+    }, 500);
+  });
 }
 async function shutDownServer(pid) {
   try {
@@ -19343,10 +19356,13 @@ async function shutDownServer(pid) {
     return;
   }
   const abort = new AbortController();
-  const exitPromise = waitForProcessToExit(pid, abort.signal).then(() => true, () => null);
-  const waitPromise = sleep(30 * 60 * 1e3, abort.signal).then(() => false, () => null);
+  const exitPromise = waitForProcessToExit(pid, abort.signal);
+  const waitPromise = sleep(30 * 60 * 1e3, abort.signal);
   try {
-    const finished = await Promise.race([exitPromise, waitPromise]);
+    const finished = await Promise.race([
+      exitPromise.then(() => true),
+      waitPromise.then(() => false)
+    ]);
     if (finished) {
       return;
     }
@@ -19358,8 +19374,7 @@ async function shutDownServer(pid) {
     await exitPromise;
   } finally {
     abort.abort();
-    await Promise.allSettled([exitPromise, waitPromise]).catch(() => {
-    });
+    await Promise.allSettled([exitPromise, waitPromise]);
   }
 }
 (async () => {

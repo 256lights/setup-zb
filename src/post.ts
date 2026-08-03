@@ -31,15 +31,29 @@ function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
   });
 }
 
-async function waitForProcessToExit(pid: number, abortSignal?: AbortSignal): Promise<void> {
-  for (;;) {
-    try {
-      process.kill(pid, 0);
-    } catch {
-      return;
+function waitForProcessToExit(pid: number, abortSignal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let id: NodeJS.Timeout;
+    const abortListener = () => {
+      clearInterval(id);
+      reject(abortSignal?.reason);
+    };
+    if (abortSignal) {
+      abortSignal.addEventListener('abort', abortListener);
     }
-    sleep(500, abortSignal);
-  }
+
+    id = setInterval(() => {
+      try {
+        process.kill(pid, 0);
+      } catch {
+        if (abortSignal) {
+          abortSignal.removeEventListener('abort', abortListener);
+        }
+        clearInterval(id);
+        resolve();
+      }
+    }, 500);
+  });
 }
 
 async function shutDownServer(pid: number): Promise<void> {
@@ -54,12 +68,13 @@ async function shutDownServer(pid: number): Promise<void> {
 
   // After 30 minutes (enough time to upload everything), send SIGTERM.
   const abort = new AbortController();
-  const exitPromise = waitForProcessToExit(pid, abort.signal)
-    .then(() => true, () => null);
-  const waitPromise = sleep(30 * 60 * 1000, abort.signal)
-    .then(() => false, () => null);
+  const exitPromise = waitForProcessToExit(pid, abort.signal);
+  const waitPromise = sleep(30 * 60 * 1000, abort.signal);
   try {
-    const finished = await Promise.race([exitPromise, waitPromise]);
+    const finished = await Promise.race([
+      exitPromise.then(() => true),
+      waitPromise.then(() => false),
+    ]);
     if (finished) {
       return;
     }
@@ -72,7 +87,7 @@ async function shutDownServer(pid: number): Promise<void> {
     await exitPromise;
   } finally {
     abort.abort();
-    await Promise.allSettled([exitPromise, waitPromise]).catch(() => {});
+    await Promise.allSettled([exitPromise, waitPromise]);
   }
 }
 

@@ -28038,7 +28038,7 @@ async function startDaemon(command, args, logPath) {
       detached: true,
       stdio: [null, logFileStream, logFileStream]
     });
-    return new Promise((resolve2, reject) => {
+    return await new Promise((resolve2, reject) => {
       subprocess.on("error", (err) => {
         reject(err);
       });
@@ -28052,7 +28052,10 @@ async function startDaemon(command, args, logPath) {
       });
     });
   } finally {
-    await logFile.close();
+    try {
+      await logFile.close();
+    } catch {
+    }
   }
 }
 (async () => {
@@ -28099,7 +28102,7 @@ async function startDaemon(command, args, logPath) {
   }
   const zbExtractedFolderPath = await group(`Downloading ${asset.downloadUrl}`, async () => {
     const zbArchivePath = await downloadTool(asset.downloadUrl);
-    return extractArchive(zbArchivePath, asset.name);
+    return await extractArchive(zbArchivePath, asset.name);
   });
   const useRoot = getBooleanInput("use-root");
   const installerPath = import_node_path.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "install");
