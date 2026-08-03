@@ -74,7 +74,7 @@ async function shutDownServer(pid: number): Promise<void> {
     await exitPromise;
   } finally {
     abort.abort();
-    await Promise.allSettled([exitPromise, waitPromise]);
+    await Promise.all([exitPromise.catch(() => {}), waitPromise.catch(() => {})]);
   }
 }
 

@@ -19361,7 +19361,9 @@ async function shutDownServer(pid) {
     await exitPromise;
   } finally {
     abort.abort();
-    await Promise.allSettled([exitPromise, waitPromise]);
+    await Promise.all([exitPromise.catch(() => {
+    }), waitPromise.catch(() => {
+    })]);
   }
 }
 (async () => {
