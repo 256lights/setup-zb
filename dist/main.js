@@ -28019,8 +28019,10 @@ function exec2(command, args) {
       reject(err);
     });
     subprocess.on("close", (exitCode, signal) => {
-      if (exitCode !== null) {
-        resolve2(exitCode);
+      if (exitCode === 0) {
+        resolve2();
+      } else if (exitCode !== null) {
+        reject(new Error(`${import_node_path.default.basename(command)} terminated with exit code ${exitCode}`));
       } else if (signal !== null) {
         reject(new Error(`${import_node_path.default.basename(command)} terminated from ${signal}`));
       }

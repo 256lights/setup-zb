@@ -64,7 +64,7 @@ function temporaryFileName(prefix: string, suffix: string): string {
 
 }
 
-function exec(command: string, args: readonly string[]): Promise<number> {
+function exec(command: string, args: readonly string[]): Promise<void> {
   const subprocess = child_process.spawn(command, args, { stdio: 'inherit' });
   return new Promise((resolve, reject) => {
     subprocess.on('error', (err) => {
@@ -72,8 +72,10 @@ function exec(command: string, args: readonly string[]): Promise<number> {
     });
 
     subprocess.on('close', (exitCode, signal) => {
-      if (exitCode !== null) {
-        resolve(exitCode);
+      if (exitCode === 0) {
+        resolve();
+      } else if (exitCode !== null) {
+        reject(new Error(`${path.basename(command)} terminated with exit code ${exitCode}`));
       } else if (signal !== null) {
         reject(new Error(`${path.basename(command)} terminated from ${signal}`));
       }
