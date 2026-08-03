@@ -65,6 +65,7 @@ async function shutDownServer(pid: number): Promise<void> {
     // Already exited.
     return;
   }
+  core.info(`Sent SIGUSR2 to process ${pid}`);
 
   // After 30 minutes (enough time to upload everything), send SIGTERM.
   const abort = new AbortController();
@@ -79,11 +80,12 @@ async function shutDownServer(pid: number): Promise<void> {
       return;
     }
     try {
-      process.kill(pid)
+      process.kill(pid, 'SIGTERM');
     } catch {
       // Already exited.
       return;
     }
+    core.info(`Sent SIGTERM to process ${pid}`);
     await exitPromise;
   } finally {
     abort.abort();
@@ -96,6 +98,7 @@ async function shutDownServer(pid: number): Promise<void> {
   if (pidString) {
     const pid = parseInt(pidString, 10);
     await shutDownServer(pid);
+    core.info('Server shut down.');
   }
 
   const logFilePath = core.getState(serveLogFilePathKey);

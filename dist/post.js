@@ -18893,6 +18893,9 @@ function escapeProperty(s) {
   return toCommandValue(s).replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A").replace(/:/g, "%3A").replace(/,/g, "%2C");
 }
 
+// node_modules/@actions/core/lib/core.js
+var os3 = __toESM(require("os"), 1);
+
 // node_modules/@actions/http-client/lib/index.js
 var tunnel = __toESM(require_tunnel2(), 1);
 var import_undici = __toESM(require_undici(), 1);
@@ -19281,6 +19284,9 @@ var ExitCode;
   ExitCode2[ExitCode2["Success"] = 0] = "Success";
   ExitCode2[ExitCode2["Failure"] = 1] = "Failure";
 })(ExitCode || (ExitCode = {}));
+function info(message) {
+  process.stdout.write(message + os3.EOL);
+}
 function startGroup(name) {
   issue("group", name);
 }
@@ -19355,6 +19361,7 @@ async function shutDownServer(pid) {
   } catch {
     return;
   }
+  info(`Sent SIGUSR2 to process ${pid}`);
   const abort = new AbortController();
   const exitPromise = waitForProcessToExit(pid, abort.signal);
   const waitPromise = sleep(30 * 60 * 1e3, abort.signal);
@@ -19367,10 +19374,11 @@ async function shutDownServer(pid) {
       return;
     }
     try {
-      import_node_process.default.kill(pid);
+      import_node_process.default.kill(pid, "SIGTERM");
     } catch {
       return;
     }
+    info(`Sent SIGTERM to process ${pid}`);
     await exitPromise;
   } finally {
     abort.abort();
@@ -19382,6 +19390,7 @@ async function shutDownServer(pid) {
   if (pidString) {
     const pid = parseInt(pidString, 10);
     await shutDownServer(pid);
+    info("Server shut down.");
   }
   const logFilePath = getState(serveLogFilePathKey);
   if (logFilePath) {
