@@ -15,6 +15,7 @@ import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
 import { downloadTool, extractTar, extractZip } from '@actions/tool-cache';
 
+import { createConfigurationFiles, getConfigurationInputs, joinPathList } from './config';
 import { serveLogFilePathKey, servePIDKey } from './shared';
 
 interface Release {
@@ -119,6 +120,11 @@ async function startDaemon(command: string, args: readonly string[], logPath: st
 }
 
 (async () => {
+  const configFiles = await createConfigurationFiles(getConfigurationInputs());
+  if (configFiles.length > 0) {
+    core.exportVariable('ZB_CONFIG_FILE', joinPathList(configFiles));
+  }
+
   const octokit = getOctokit(core.getInput('github-token', { required: true }));
 
   const version = core.getInput('zb-version');

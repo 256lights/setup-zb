@@ -28,6 +28,23 @@ This action sets up zb for use in GitHub Actions by:
     # then display its logs.
     zb-serve: true
 
+    # Additional configuration to use.
+    # Reference at https://zb.256lights.llc/configuration
+    configuration: >-
+      {
+        "trustedPublicKeys": [
+          {
+            "format": "ed25519",
+            "publicKey": "s4dh0QI8VqQGpVkH+K1NqNSggFTqlehoXBZYdJ93IS8="
+          }
+        ]
+      }
+
+    # Signing key to use in the server.
+    # Store this in a GitHub Actions secret:
+    # https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets
+    signing-key: ${{ secrets.ZB_SIGNING_KEY }}
+
     # Whether to run the installer and `zb serve` as root.
     # (Defaults to true.)
     # This is generally recommended,

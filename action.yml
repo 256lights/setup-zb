@@ -7,6 +7,10 @@ inputs:
   zb-serve:
     description: Whether to start `zb serve`.
     default: "true"
+  configuration:
+    description: Additional configuration to use as a string in JSON With Commas and Comments format.
+  signing-key:
+    description: Signing key as a string in JSON format. Typically stored as a secret.
   use-root:
     description: Whether to run the installer and `zb serve` as root.
     default: "true"
