@@ -28107,14 +28107,16 @@ async function startDaemon(command, args, logPath) {
     if (useRoot) {
       return exec2("sudo", [
         installerPath,
-        "--bin=",
+        "--bin",
+        "",
         "--no-systemd",
         "--no-launchd"
       ]);
     } else {
       return exec2(installerPath, [
         "--single-user",
-        "--bin=",
+        "--bin",
+        "",
         "--no-systemd",
         "--no-launchd"
       ]);

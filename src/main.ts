@@ -181,14 +181,14 @@ async function startDaemon(command: string, args: readonly string[], logPath: st
     if (useRoot) {
       return exec('sudo', [
         installerPath,
-        '--bin=',
+        '--bin', '',
         '--no-systemd',
         '--no-launchd',
       ]);
     } else {
       return exec(installerPath, [
         '--single-user',
-        '--bin=',
+        '--bin', '',
         '--no-systemd',
         '--no-launchd',
       ]);
