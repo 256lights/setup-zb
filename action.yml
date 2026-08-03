@@ -17,4 +17,3 @@ runs:
   using: node24
   main: dist/main.js
   post: dist/post.js
-  post-if: inputs.zb-serve
