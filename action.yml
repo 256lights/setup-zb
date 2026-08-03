@@ -9,6 +9,10 @@ inputs:
     default: "true"
   configuration:
     description: Additional configuration to use as a string in JSON With Commas and Comments format.
+  server-download-discovery:
+    description: Binary cache discovery document for downloading.
+  server-upload-discovery:
+    description: Binary cache discovery document for uploading.
   signing-key:
     description: Signing key as a string in JSON format. Typically stored as a secret.
   use-root:
