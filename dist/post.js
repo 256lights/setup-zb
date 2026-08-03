@@ -19343,11 +19343,12 @@ async function shutDownServer(pid) {
     return;
   }
   const abort = new AbortController();
+  const exitPromise = waitForProcessToExit(pid, abort.signal);
+  const waitPromise = sleep(30 * 60 * 1e3, abort.signal);
   try {
-    const exitPromise = waitForProcessToExit(pid, abort.signal);
     const finished = await Promise.race([
       exitPromise.then(() => true),
-      sleep(30 * 60 * 1e3, abort.signal).then(() => false)
+      waitPromise.then(() => false)
     ]);
     if (finished) {
       return;
@@ -19360,6 +19361,7 @@ async function shutDownServer(pid) {
     await exitPromise;
   } finally {
     abort.abort();
+    await Promise.allSettled([exitPromise, waitPromise]);
   }
 }
 (async () => {

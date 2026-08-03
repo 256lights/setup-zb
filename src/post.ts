@@ -52,14 +52,14 @@ async function shutDownServer(pid: number): Promise<void> {
     return;
   }
 
+  // After 30 minutes (enough time to upload everything), send SIGTERM.
   const abort = new AbortController();
+  const exitPromise = waitForProcessToExit(pid, abort.signal);
+  const waitPromise = sleep(30 * 60 * 1000, abort.signal);
   try {
-    const exitPromise = waitForProcessToExit(pid, abort.signal);
-
-    // After 30 minutes (enough time to upload everything), send SIGTERM.
     const finished = await Promise.race([
       exitPromise.then(() => true),
-      sleep(30 * 60 * 1000, abort.signal).then(() => false),
+      waitPromise.then(() => false),
     ]);
     if (finished) {
       return;
@@ -74,6 +74,7 @@ async function shutDownServer(pid: number): Promise<void> {
     await exitPromise;
   } finally {
     abort.abort();
+    await Promise.allSettled([exitPromise, waitPromise]);
   }
 }
 
