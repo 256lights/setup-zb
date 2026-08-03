@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { platform } from '@actions/core';
 import * as esbuild from 'esbuild';
 
 await esbuild.build({
