@@ -173,12 +173,25 @@ async function startDaemon(command: string, args: readonly string[], logPath: st
     return extractArchive(zbArchivePath, asset.name);
   });
 
+  const useRoot = core.getBooleanInput('use-root');
   const installerPath = path.join(zbExtractedFolderPath, archiveBaseName(asset.name), 'install');
-  await core.group('Running installer', () => exec(installerPath, [
-    '--single-user',
-    '--no-systemd',
-    '--no-launchd',
-  ]));
+  await core.group('Running installer', () => {
+    if (useRoot) {
+      return exec('sudo', [
+        installerPath,
+        '--bin=',
+        '--no-systemd',
+        '--no-launchd',
+      ]);
+    } else {
+      return exec(installerPath, [
+        '--single-user',
+        '--bin=',
+        '--no-systemd',
+        '--no-launchd',
+      ]);
+    }
+  });
 
   const installerStorePath = path.join(zbExtractedFolderPath, archiveBaseName(asset.name), 'store');
   const objectNames = await fs.readdir(installerStorePath);
@@ -204,11 +217,15 @@ async function startDaemon(command: string, args: readonly string[], logPath: st
 
   if (core.getBooleanInput('zb-serve') && zbBins[0]) {
     const logFilePath = temporaryFileName('zb-serve-', '.txt');
+    const serveArgs = [
+      'serve',
+      `--sandbox=${useRoot && process.platform === 'linux' ? '1' : '0'}`,
+    ];
     let pid: number | undefined;
     try {
-      pid = await startDaemon(path.join(zbBins[0], 'zb'), [
-        'serve',
-      ], logFilePath);
+      pid = useRoot ?
+        await startDaemon('sudo', [path.join(zbBins[0], 'zb'), ...serveArgs], logFilePath) :
+        await startDaemon(path.join(zbBins[0], 'zb'), serveArgs, logFilePath);
     } catch (err) {
       core.error(typeof err === 'string' || err instanceof Error ?
         err :
