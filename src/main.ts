@@ -5,7 +5,6 @@
  */
 
 import fs from 'node:fs/promises';
-import process from 'node:process';
 import path from 'node:path';
 
 import * as core from '@actions/core';
@@ -107,13 +106,13 @@ function archiveBaseName(name: string): string {
   const releaseAssets = release?.releaseAssets?.nodes || [];
 
   let asset: ReleaseAsset | undefined;
-  if (process.platform === 'darwin' && process.arch === 'arm64') {
+  if (core.platform.isMacOS && core.platform.arch === 'arm64') {
     asset = releaseAssets.find(({ name }) => name.includes('aarch64-apple-macos'))
-  } else if (process.platform === 'linux' && process.arch === 'x64') {
+  } else if (core.platform.isLinux && core.platform.arch === 'x64') {
     asset = releaseAssets.find(({ name }) => name.includes('x86_64-unknown-linux'))
   }
   if (!asset) {
-    core.setFailed(`No download found for ${process.arch}-${process.platform} version ${release?.tagName || version}`);
+    core.setFailed(`No download found for ${core.platform.arch}-${core.platform.platform} version ${release?.tagName || version}`);
     return;
   }
 
@@ -139,7 +138,7 @@ function archiveBaseName(name: string): string {
 
   const installerStorePath = path.join(zbExtractedFolderPath, archiveBaseName(asset.name), 'store');
   const objectNames = await fs.readdir(installerStorePath);
-  const zbStoreDirectory = process.platform === 'win32' ? 'C:\\zb\\store' : '/opt/zb/store';
+  const zbStoreDirectory = core.platform.isWindows ? 'C:\\zb\\store' : '/opt/zb/store';
   const zbBins = await Promise.all(
     objectNames
       .filter((name) => name.match(/-zb-/))
@@ -164,7 +163,7 @@ function archiveBaseName(name: string): string {
     const zbExe = path.join(zbBins[0], 'zb');
     const serveArgs = [
       'serve',
-      `--sandbox=${useRoot && process.platform === 'linux' ? '1' : '0'}`,
+      `--sandbox=${useRoot && core.platform.isLinux ? '1' : '0'}`,
     ];
     let pid: number | undefined;
     try {

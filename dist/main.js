@@ -21730,7 +21730,6 @@ var require_semver2 = __commonJS({
 
 // src/main.ts
 var import_promises4 = __toESM(require("node:fs/promises"));
-var import_node_process = __toESM(require("node:process"));
 var import_node_path4 = __toESM(require("node:path"));
 
 // node_modules/@actions/core/lib/command.js
@@ -28325,13 +28324,13 @@ function archiveBaseName(name) {
   const release = graphqlResponse.repository.release;
   const releaseAssets = release?.releaseAssets?.nodes || [];
   let asset;
-  if (import_node_process.default.platform === "darwin" && import_node_process.default.arch === "arm64") {
+  if (platform_exports.isMacOS && platform_exports.arch === "arm64") {
     asset = releaseAssets.find(({ name }) => name.includes("aarch64-apple-macos"));
-  } else if (import_node_process.default.platform === "linux" && import_node_process.default.arch === "x64") {
+  } else if (platform_exports.isLinux && platform_exports.arch === "x64") {
     asset = releaseAssets.find(({ name }) => name.includes("x86_64-unknown-linux"));
   }
   if (!asset) {
-    setFailed(`No download found for ${import_node_process.default.arch}-${import_node_process.default.platform} version ${release?.tagName || version}`);
+    setFailed(`No download found for ${platform_exports.arch}-${platform_exports.platform} version ${release?.tagName || version}`);
     return;
   }
   const zbExtractedFolderPath = await group(`Downloading ${asset.downloadUrl}`, async () => {
@@ -28355,7 +28354,7 @@ function archiveBaseName(name) {
   });
   const installerStorePath = import_node_path4.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "store");
   const objectNames = await import_promises4.default.readdir(installerStorePath);
-  const zbStoreDirectory = import_node_process.default.platform === "win32" ? "C:\\zb\\store" : "/opt/zb/store";
+  const zbStoreDirectory = platform_exports.isWindows ? "C:\\zb\\store" : "/opt/zb/store";
   const zbBins = await Promise.all(
     objectNames.filter((name) => name.match(/-zb-/)).map(async (name) => {
       const binPath = import_node_path4.default.join(zbStoreDirectory, name, "bin");
@@ -28377,7 +28376,7 @@ function archiveBaseName(name) {
     const zbExe = import_node_path4.default.join(zbBins[0], "zb");
     const serveArgs = [
       "serve",
-      `--sandbox=${useRoot && import_node_process.default.platform === "linux" ? "1" : "0"}`
+      `--sandbox=${useRoot && platform_exports.isLinux ? "1" : "0"}`
     ];
     let pid;
     try {
