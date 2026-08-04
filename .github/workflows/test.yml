@@ -6,7 +6,7 @@ on:
   push:
   pull_request:
 jobs:
-  cli:
+  test:
     name: Test
     runs-on: ${{matrix.os}}
     strategy:
@@ -27,3 +27,18 @@ jobs:
           node-version-file: package.json
       - run: npm install
       - run: npm test
+  bundle:
+    name: Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Ensure bundle matches source
+        run: git diff --name-only --exit-code -- dist

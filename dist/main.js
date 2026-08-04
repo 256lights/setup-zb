@@ -1072,14 +1072,14 @@ var require_util = __commonJS({
         }
         const port = url.port != null ? url.port : url.protocol === "https:" ? 443 : 80;
         let origin = url.origin != null ? url.origin : `${url.protocol || ""}//${url.hostname || ""}:${port}`;
-        let path8 = url.path != null ? url.path : `${url.pathname || ""}${url.search || ""}`;
+        let path10 = url.path != null ? url.path : `${url.pathname || ""}${url.search || ""}`;
         if (origin[origin.length - 1] === "/") {
           origin = origin.slice(0, origin.length - 1);
         }
-        if (path8 && path8[0] !== "/") {
-          path8 = `/${path8}`;
+        if (path10 && path10[0] !== "/") {
+          path10 = `/${path10}`;
         }
-        return new URL(`${origin}${path8}`);
+        return new URL(`${origin}${path10}`);
       }
       if (!isHttpOrHttpsPrefixed(url.origin || url.protocol)) {
         throw new InvalidArgumentError("Invalid URL protocol: the URL must start with `http:` or `https:`.");
@@ -1530,39 +1530,39 @@ var require_diagnostics = __commonJS({
       });
       diagnosticsChannel.channel("undici:client:sendHeaders").subscribe((evt) => {
         const {
-          request: { method, path: path8, origin }
+          request: { method, path: path10, origin }
         } = evt;
-        debuglog("sending request to %s %s/%s", method, origin, path8);
+        debuglog("sending request to %s %s/%s", method, origin, path10);
       });
       diagnosticsChannel.channel("undici:request:headers").subscribe((evt) => {
         const {
-          request: { method, path: path8, origin },
+          request: { method, path: path10, origin },
           response: { statusCode }
         } = evt;
         debuglog(
           "received response to %s %s/%s - HTTP %d",
           method,
           origin,
-          path8,
+          path10,
           statusCode
         );
       });
       diagnosticsChannel.channel("undici:request:trailers").subscribe((evt) => {
         const {
-          request: { method, path: path8, origin }
+          request: { method, path: path10, origin }
         } = evt;
-        debuglog("trailers received from %s %s/%s", method, origin, path8);
+        debuglog("trailers received from %s %s/%s", method, origin, path10);
       });
       diagnosticsChannel.channel("undici:request:error").subscribe((evt) => {
         const {
-          request: { method, path: path8, origin },
+          request: { method, path: path10, origin },
           error: error2
         } = evt;
         debuglog(
           "request to %s %s/%s errored - %s",
           method,
           origin,
-          path8,
+          path10,
           error2.message
         );
       });
@@ -1611,9 +1611,9 @@ var require_diagnostics = __commonJS({
         });
         diagnosticsChannel.channel("undici:client:sendHeaders").subscribe((evt) => {
           const {
-            request: { method, path: path8, origin }
+            request: { method, path: path10, origin }
           } = evt;
-          debuglog("sending request to %s %s/%s", method, origin, path8);
+          debuglog("sending request to %s %s/%s", method, origin, path10);
         });
       }
       diagnosticsChannel.channel("undici:websocket:open").subscribe((evt) => {
@@ -1676,7 +1676,7 @@ var require_request = __commonJS({
     var kHandler = /* @__PURE__ */ Symbol("handler");
     var Request = class {
       constructor(origin, {
-        path: path8,
+        path: path10,
         method,
         body,
         headers,
@@ -1691,11 +1691,11 @@ var require_request = __commonJS({
         expectContinue,
         servername
       }, handler2) {
-        if (typeof path8 !== "string") {
+        if (typeof path10 !== "string") {
           throw new InvalidArgumentError("path must be a string");
-        } else if (path8[0] !== "/" && !(path8.startsWith("http://") || path8.startsWith("https://")) && method !== "CONNECT") {
+        } else if (path10[0] !== "/" && !(path10.startsWith("http://") || path10.startsWith("https://")) && method !== "CONNECT") {
           throw new InvalidArgumentError("path must be an absolute URL or start with a slash");
-        } else if (invalidPathRegex.test(path8)) {
+        } else if (invalidPathRegex.test(path10)) {
           throw new InvalidArgumentError("invalid request path");
         }
         if (typeof method !== "string") {
@@ -1761,7 +1761,7 @@ var require_request = __commonJS({
         this.completed = false;
         this.aborted = false;
         this.upgrade = upgrade || null;
-        this.path = query ? buildURL(path8, query) : path8;
+        this.path = query ? buildURL(path10, query) : path10;
         this.origin = origin;
         this.idempotent = idempotent == null ? method === "HEAD" || method === "GET" : idempotent;
         this.blocking = blocking == null ? false : blocking;
@@ -6391,7 +6391,7 @@ var require_client_h1 = __commonJS({
       return method !== "GET" && method !== "HEAD" && method !== "OPTIONS" && method !== "TRACE" && method !== "CONNECT";
     }
     function writeH1(client, request2) {
-      const { method, path: path8, host, upgrade, blocking, reset } = request2;
+      const { method, path: path10, host, upgrade, blocking, reset } = request2;
       let { body, headers, contentLength } = request2;
       const expectsPayload = method === "PUT" || method === "POST" || method === "PATCH" || method === "QUERY" || method === "PROPFIND" || method === "PROPPATCH";
       if (util2.isFormDataLike(body)) {
@@ -6466,7 +6466,7 @@ var require_client_h1 = __commonJS({
       if (blocking) {
         socket[kBlocking] = true;
       }
-      let header = `${method} ${path8} HTTP/1.1\r
+      let header = `${method} ${path10} HTTP/1.1\r
 `;
       if (typeof host === "string") {
         header += `host: ${host}\r
@@ -6992,7 +6992,7 @@ var require_client_h2 = __commonJS({
     }
     function writeH2(client, request2) {
       const session = client[kHTTP2Session];
-      const { method, path: path8, host, upgrade, expectContinue, signal, headers: reqHeaders } = request2;
+      const { method, path: path10, host, upgrade, expectContinue, signal, headers: reqHeaders } = request2;
       let { body } = request2;
       if (upgrade) {
         util2.errorRequest(client, request2, new Error("Upgrade not supported for H2"));
@@ -7059,7 +7059,7 @@ var require_client_h2 = __commonJS({
         });
         return true;
       }
-      headers[HTTP2_HEADER_PATH] = path8;
+      headers[HTTP2_HEADER_PATH] = path10;
       headers[HTTP2_HEADER_SCHEME] = "https";
       const expectsPayload = method === "PUT" || method === "POST" || method === "PATCH";
       if (body && typeof body.read === "function") {
@@ -7412,9 +7412,9 @@ var require_redirect_handler = __commonJS({
           return this.handler.onHeaders(statusCode, headers, resume, statusText);
         }
         const { origin, pathname, search } = util2.parseURL(new URL(this.location, this.opts.origin && new URL(this.opts.path, this.opts.origin)));
-        const path8 = search ? `${pathname}${search}` : pathname;
+        const path10 = search ? `${pathname}${search}` : pathname;
         this.opts.headers = cleanRequestHeaders(this.opts.headers, statusCode === 303, this.opts.origin !== origin);
-        this.opts.path = path8;
+        this.opts.path = path10;
         this.opts.origin = origin;
         this.opts.maxRedirections = 0;
         this.opts.query = null;
@@ -8649,10 +8649,10 @@ var require_proxy_agent = __commonJS({
         };
         const {
           origin,
-          path: path8 = "/",
+          path: path10 = "/",
           headers = {}
         } = opts;
-        opts.path = origin + path8;
+        opts.path = origin + path10;
         if (!("host" in headers) && !("Host" in headers)) {
           const { host } = new URL2(origin);
           headers.host = host;
@@ -10601,20 +10601,20 @@ var require_mock_utils = __commonJS({
       }
       return true;
     }
-    function safeUrl(path8) {
-      if (typeof path8 !== "string") {
-        return path8;
+    function safeUrl(path10) {
+      if (typeof path10 !== "string") {
+        return path10;
       }
-      const pathSegments = path8.split("?");
+      const pathSegments = path10.split("?");
       if (pathSegments.length !== 2) {
-        return path8;
+        return path10;
       }
       const qp = new URLSearchParams(pathSegments.pop());
       qp.sort();
       return [...pathSegments, qp.toString()].join("?");
     }
-    function matchKey(mockDispatch2, { path: path8, method, body, headers }) {
-      const pathMatch = matchValue(mockDispatch2.path, path8);
+    function matchKey(mockDispatch2, { path: path10, method, body, headers }) {
+      const pathMatch = matchValue(mockDispatch2.path, path10);
       const methodMatch = matchValue(mockDispatch2.method, method);
       const bodyMatch = typeof mockDispatch2.body !== "undefined" ? matchValue(mockDispatch2.body, body) : true;
       const headersMatch = matchHeaders(mockDispatch2, headers);
@@ -10636,7 +10636,7 @@ var require_mock_utils = __commonJS({
     function getMockDispatch(mockDispatches, key) {
       const basePath = key.query ? buildURL(key.path, key.query) : key.path;
       const resolvedPath = typeof basePath === "string" ? safeUrl(basePath) : basePath;
-      let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path: path8 }) => matchValue(safeUrl(path8), resolvedPath));
+      let matchedMockDispatches = mockDispatches.filter(({ consumed }) => !consumed).filter(({ path: path10 }) => matchValue(safeUrl(path10), resolvedPath));
       if (matchedMockDispatches.length === 0) {
         throw new MockNotMatchedError(`Mock dispatch not matched for path '${resolvedPath}'`);
       }
@@ -10674,9 +10674,9 @@ var require_mock_utils = __commonJS({
       }
     }
     function buildKey(opts) {
-      const { path: path8, method, body, headers, query } = opts;
+      const { path: path10, method, body, headers, query } = opts;
       return {
-        path: path8,
+        path: path10,
         method,
         body,
         headers,
@@ -11139,10 +11139,10 @@ var require_pending_interceptors_formatter = __commonJS({
       }
       format(pendingInterceptors) {
         const withPrettyHeaders = pendingInterceptors.map(
-          ({ method, path: path8, data: { statusCode }, persist, times, timesInvoked, origin }) => ({
+          ({ method, path: path10, data: { statusCode }, persist, times, timesInvoked, origin }) => ({
             Method: method,
             Origin: origin,
-            Path: path8,
+            Path: path10,
             "Status code": statusCode,
             Persistent: persist ? PERSISTENT : NOT_PERSISTENT,
             Invocations: timesInvoked,
@@ -16023,9 +16023,9 @@ var require_util6 = __commonJS({
         }
       }
     }
-    function validateCookiePath(path8) {
-      for (let i = 0; i < path8.length; ++i) {
-        const code = path8.charCodeAt(i);
+    function validateCookiePath(path10) {
+      for (let i = 0; i < path10.length; ++i) {
+        const code = path10.charCodeAt(i);
         if (code < 32 || // exclude CTLs (0-31)
         code > 126 || // exclude DEL and non-ascii
         code === 59) {
@@ -18756,11 +18756,11 @@ var require_undici = __commonJS({
           if (typeof opts.path !== "string") {
             throw new InvalidArgumentError("invalid opts.path");
           }
-          let path8 = opts.path;
+          let path10 = opts.path;
           if (!opts.path.startsWith("/")) {
-            path8 = `/${path8}`;
+            path10 = `/${path10}`;
           }
-          url = new URL(util2.parseOrigin(url).origin + path8);
+          url = new URL(util2.parseOrigin(url).origin + path10);
         } else {
           if (!opts) {
             opts = typeof url === "object" ? url : {};
@@ -21729,12 +21729,9 @@ var require_semver2 = __commonJS({
 });
 
 // src/main.ts
-var import_node_crypto = __toESM(require("node:crypto"));
-var import_node_child_process = __toESM(require("node:child_process"));
-var import_promises2 = __toESM(require("node:fs/promises"));
-var import_node_os2 = require("node:os");
+var import_promises4 = __toESM(require("node:fs/promises"));
 var import_node_process = __toESM(require("node:process"));
-var import_node_path2 = __toESM(require("node:path"));
+var import_node_path4 = __toESM(require("node:path"));
 
 // node_modules/@actions/core/lib/command.js
 var os = __toESM(require("os"), 1);
@@ -23829,8 +23826,8 @@ var Context = class {
       if ((0, import_fs2.existsSync)(process.env.GITHUB_EVENT_PATH)) {
         this.payload = JSON.parse((0, import_fs2.readFileSync)(process.env.GITHUB_EVENT_PATH, { encoding: "utf8" }));
       } else {
-        const path8 = process.env.GITHUB_EVENT_PATH;
-        process.stdout.write(`GITHUB_EVENT_PATH ${path8} does not exist${import_os3.EOL}`);
+        const path10 = process.env.GITHUB_EVENT_PATH;
+        process.stdout.write(`GITHUB_EVENT_PATH ${path10} does not exist${import_os3.EOL}`);
       }
     }
     this.eventName = process.env.GITHUB_EVENT_NAME;
@@ -28113,40 +28110,95 @@ function _getGlobal(key, defaultValue) {
 }
 
 // src/config.ts
+var import_promises2 = __toESM(require("node:fs/promises"));
+var import_node_path2 = __toESM(require("node:path"));
+
+// src/temporary.ts
+var import_node_crypto = __toESM(require("node:crypto"));
 var import_promises = __toESM(require("node:fs/promises"));
 var import_node_os = require("node:os");
 var import_node_path = __toESM(require("node:path"));
+function temporaryFileName(dirOrPattern, pattern) {
+  const dir = pattern === void 0 || !dirOrPattern ? (0, import_node_os.tmpdir)() : dirOrPattern;
+  const [prefix, suffix] = splitPattern(pattern ?? (dirOrPattern || ""));
+  const name = prefix + import_node_crypto.default.randomBytes(8).toString("base64url") + suffix;
+  return import_node_path.default.join(dir, name);
+}
+function mkdirTemp(dirOrPattern, pattern) {
+  const dir = pattern !== void 0 ? dirOrPattern : void 0;
+  const name = temporaryFileName(dir, pattern ?? (dirOrPattern || ""));
+  return import_promises.default.mkdir(name, 448).then(() => name);
+}
+function splitPattern(pattern) {
+  const match = pattern.match(/^(.*)\*([^*]*)$/);
+  if (match) {
+    return [match[1], match[2]];
+  }
+  return [pattern, ""];
+}
+
+// src/config.ts
 function getConfigurationInputs() {
-  return {
-    configuration: getInput("configuration"),
-    "signing-key": getInput("signing-key")
-  };
+  const inputs = {};
+  const keys = [
+    "configuration",
+    "signing-key",
+    "server-download-discovery",
+    "server-upload-discovery"
+  ];
+  for (const key of keys) {
+    inputs[key] = getInput(key);
+  }
+  return inputs;
+}
+function hasGenerated(inputs) {
+  return !!inputs["signing-key"] || !!inputs["server-download-discovery"] || !!inputs["server-upload-discovery"];
 }
 async function createConfigurationFiles(inputs) {
-  if (!inputs.configuration && !inputs["signing-key"]) {
+  if (!inputs.configuration && !hasGenerated(inputs)) {
     return [];
   }
   const configFiles = [];
-  const configDir = await import_promises.default.mkdtemp(import_node_path.default.join((0, import_node_os.tmpdir)(), "zb-config-"));
-  if (inputs["signing-key"]) {
-    const keyPath = import_node_path.default.join(configDir, "signing-key.json");
-    await import_promises.default.writeFile(keyPath, inputs["signing-key"], {
-      encoding: "utf-8"
-    });
-    const p = import_node_path.default.join(configDir, "action.json");
-    const configObject = {
-      server: {
-        signingKeyFiles: ["signing-key.json"]
-      }
-    };
-    await import_promises.default.writeFile(keyPath, JSON.stringify(configObject), {
+  const configDir = await mkdirTemp("zb-config-");
+  if (hasGenerated(inputs)) {
+    const serverConfig = {};
+    if (inputs["signing-key"]) {
+      const keyPath = import_node_path2.default.join(configDir, "signing-key.json");
+      await import_promises2.default.writeFile(keyPath, inputs["signing-key"], {
+        encoding: "utf-8"
+      });
+      serverConfig.signingKeyFiles = ["signing-key.json"];
+    }
+    if (inputs["server-download-discovery"]) {
+      const keyPath = import_node_path2.default.join(configDir, "download-discovery.json");
+      await import_promises2.default.writeFile(keyPath, inputs["server-download-discovery"], {
+        encoding: "utf-8"
+      });
+      serverConfig.download = {
+        type: "http",
+        url: "download-discovery.json"
+      };
+    }
+    if (inputs["server-upload-discovery"]) {
+      const keyPath = import_node_path2.default.join(configDir, "upload-discovery.json");
+      await import_promises2.default.writeFile(keyPath, inputs["server-upload-discovery"], {
+        encoding: "utf-8"
+      });
+      serverConfig.upload = {
+        type: "http",
+        url: "upload-discovery.json"
+      };
+    }
+    const configObject = { server: serverConfig };
+    const p = import_node_path2.default.join(configDir, "action.json");
+    await import_promises2.default.writeFile(p, JSON.stringify(configObject), {
       encoding: "utf-8"
     });
     configFiles.push(p);
   }
   if (inputs.configuration) {
-    const p = import_node_path.default.join(configDir, "user.json");
-    await import_promises.default.writeFile(p, inputs.configuration, {
+    const p = import_node_path2.default.join(configDir, "user.json");
+    await import_promises2.default.writeFile(p, inputs.configuration, {
       encoding: "utf-8"
     });
     configFiles.push(p);
@@ -28160,6 +28212,57 @@ function joinPathList(paths) {
 // src/shared.ts
 var servePIDKey = "zbServePID";
 var serveLogFilePathKey = "zbServeLogFile";
+
+// src/exec.ts
+var import_node_child_process = __toESM(require("node:child_process"));
+var import_promises3 = __toESM(require("node:fs/promises"));
+var import_node_path3 = __toESM(require("node:path"));
+function exec2(command, args) {
+  const subprocess = import_node_child_process.default.spawn(command, args, { stdio: "inherit" });
+  return new Promise((resolve2, reject) => {
+    subprocess.on("error", (err) => {
+      reject(err);
+    });
+    subprocess.on("close", (exitCode, signal) => {
+      if (exitCode === 0) {
+        resolve2();
+      } else if (exitCode !== null) {
+        reject(new Error(`${import_node_path3.default.basename(command)} terminated with exit code ${exitCode}`));
+      } else if (signal !== null) {
+        reject(new Error(`${import_node_path3.default.basename(command)} terminated from ${signal}`));
+      }
+    });
+  });
+}
+async function startDaemon(command, args, logPath) {
+  const flag = import_promises3.default.constants.O_WRONLY | import_promises3.default.constants.O_CREAT | import_promises3.default.constants.O_EXCL | import_promises3.default.constants.O_NOFOLLOW;
+  const logFile = await import_promises3.default.open(logPath, flag);
+  try {
+    const logFileStream = logFile.createWriteStream();
+    const subprocess = import_node_child_process.default.spawn(command, args, {
+      detached: true,
+      stdio: [null, logFileStream, logFileStream]
+    });
+    return await new Promise((resolve2, reject) => {
+      subprocess.on("error", (err) => {
+        reject(err);
+      });
+      subprocess.on("spawn", () => {
+        if (subprocess.pid === void 0) {
+          reject(new Error(`no pid after ${import_node_path3.default.basename(command)} spawned`));
+          return;
+        }
+        subprocess.unref();
+        resolve2(subprocess.pid);
+      });
+    });
+  } finally {
+    try {
+      await logFile.close();
+    } catch {
+    }
+  }
+}
 
 // src/main.ts
 var releaseFragment = `
@@ -28184,56 +28287,6 @@ function extractArchive(file, name) {
 }
 function archiveBaseName(name) {
   return name.match(/^(.*?)(?:\.(?:zip|tar\.gz|tar\.bz2))?$/)[1];
-}
-function temporaryFileName(prefix, suffix) {
-  const name = prefix + import_node_crypto.default.randomBytes(8).toString("base64url") + suffix;
-  return import_node_path2.default.join((0, import_node_os2.tmpdir)(), name);
-}
-function exec2(command, args) {
-  const subprocess = import_node_child_process.default.spawn(command, args, { stdio: "inherit" });
-  return new Promise((resolve2, reject) => {
-    subprocess.on("error", (err) => {
-      reject(err);
-    });
-    subprocess.on("close", (exitCode, signal) => {
-      if (exitCode === 0) {
-        resolve2();
-      } else if (exitCode !== null) {
-        reject(new Error(`${import_node_path2.default.basename(command)} terminated with exit code ${exitCode}`));
-      } else if (signal !== null) {
-        reject(new Error(`${import_node_path2.default.basename(command)} terminated from ${signal}`));
-      }
-    });
-  });
-}
-async function startDaemon(command, args, logPath) {
-  const flag = import_promises2.default.constants.O_WRONLY | import_promises2.default.constants.O_CREAT | import_promises2.default.constants.O_EXCL | import_promises2.default.constants.O_NOFOLLOW;
-  const logFile = await import_promises2.default.open(logPath, flag);
-  try {
-    const logFileStream = logFile.createWriteStream();
-    const subprocess = import_node_child_process.default.spawn(command, args, {
-      detached: true,
-      stdio: [null, logFileStream, logFileStream]
-    });
-    return await new Promise((resolve2, reject) => {
-      subprocess.on("error", (err) => {
-        reject(err);
-      });
-      subprocess.on("spawn", () => {
-        if (subprocess.pid === void 0) {
-          reject(new Error(`no pid after ${import_node_path2.default.basename(command)} spawned`));
-          return;
-        }
-        subprocess.unref();
-        resolve2(subprocess.pid);
-      });
-    });
-  } finally {
-    try {
-      await logFile.close();
-    } catch {
-    }
-  }
 }
 (async () => {
   const configFiles = await createConfigurationFiles(getConfigurationInputs());
@@ -28286,7 +28339,7 @@ async function startDaemon(command, args, logPath) {
     return await extractArchive(zbArchivePath, asset.name);
   });
   const useRoot = getBooleanInput("use-root");
-  const installerPath = import_node_path2.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "install");
+  const installerPath = import_node_path4.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "install");
   await group("Running installer", () => {
     if (useRoot) {
       return exec2("sudo", [
@@ -28306,14 +28359,14 @@ async function startDaemon(command, args, logPath) {
       ]);
     }
   });
-  const installerStorePath = import_node_path2.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "store");
-  const objectNames = await import_promises2.default.readdir(installerStorePath);
+  const installerStorePath = import_node_path4.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "store");
+  const objectNames = await import_promises4.default.readdir(installerStorePath);
   const zbStoreDirectory = import_node_process.default.platform === "win32" ? "C:\\zb\\store" : "/opt/zb/store";
   const zbBins = await Promise.all(
     objectNames.filter((name) => name.match(/-zb-/)).map(async (name) => {
-      const binPath = import_node_path2.default.join(zbStoreDirectory, name, "bin");
+      const binPath = import_node_path4.default.join(zbStoreDirectory, name, "bin");
       try {
-        await import_promises2.default.lstat(binPath);
+        await import_promises4.default.lstat(binPath);
       } catch {
         return null;
       }
@@ -28326,14 +28379,14 @@ async function startDaemon(command, args, logPath) {
     }
   }
   if (getBooleanInput("zb-serve") && zbBins[0]) {
-    const logFilePath = temporaryFileName("zb-serve-", ".txt");
+    const logFilePath = temporaryFileName("zb-serve-*.txt");
     const serveArgs = [
       "serve",
       `--sandbox=${useRoot && import_node_process.default.platform === "linux" ? "1" : "0"}`
     ];
     let pid;
     try {
-      pid = useRoot ? await startDaemon("sudo", [import_node_path2.default.join(zbBins[0], "zb"), ...serveArgs], logFilePath) : await startDaemon(import_node_path2.default.join(zbBins[0], "zb"), serveArgs, logFilePath);
+      pid = useRoot ? await startDaemon("sudo", [import_node_path4.default.join(zbBins[0], "zb"), ...serveArgs], logFilePath) : await startDaemon(import_node_path4.default.join(zbBins[0], "zb"), serveArgs, logFilePath);
     } catch (err) {
       error(typeof err === "string" || err instanceof Error ? err : Object.prototype.toString.call(err));
     }

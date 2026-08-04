@@ -19309,6 +19309,31 @@ function getState(name) {
   return process.env[`STATE_${name}`] || "";
 }
 
+// src/exec.ts
+function waitForProcessToExit(pid, abortSignal) {
+  return new Promise((resolve, reject) => {
+    let id;
+    const abortListener = () => {
+      clearInterval(id);
+      reject(abortSignal?.reason);
+    };
+    if (abortSignal) {
+      abortSignal.addEventListener("abort", abortListener);
+    }
+    id = setInterval(() => {
+      try {
+        process.kill(pid, 0);
+      } catch {
+        if (abortSignal) {
+          abortSignal.removeEventListener("abort", abortListener);
+        }
+        clearInterval(id);
+        resolve();
+      }
+    }, 500);
+  });
+}
+
 // src/shared.ts
 var servePIDKey = "zbServePID";
 var serveLogFilePathKey = "zbServeLogFile";
@@ -19330,29 +19355,6 @@ function sleep(delay, abortSignal) {
       }
       resolve();
     }, delay);
-  });
-}
-function waitForProcessToExit(pid, abortSignal) {
-  return new Promise((resolve, reject) => {
-    let id;
-    const abortListener = () => {
-      clearInterval(id);
-      reject(abortSignal?.reason);
-    };
-    if (abortSignal) {
-      abortSignal.addEventListener("abort", abortListener);
-    }
-    id = setInterval(() => {
-      try {
-        import_node_process.default.kill(pid, 0);
-      } catch {
-        if (abortSignal) {
-          abortSignal.removeEventListener("abort", abortListener);
-        }
-        clearInterval(id);
-        resolve();
-      }
-    }, 500);
   });
 }
 async function shutDownServer(pid) {
