@@ -6,8 +6,8 @@ on:
   push:
   pull_request:
 jobs:
-  test:
-    name: Test
+  unit:
+    name: Unit Tests
     runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
@@ -27,6 +27,22 @@ jobs:
           node-version-file: package.json
       - run: npm install
       - run: npm test
+  e2e:
+    name: End-to-End
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+      - uses: $/
+      - run: zb --version
   bundle:
     name: Bundle
     runs-on: ubuntu-latest
