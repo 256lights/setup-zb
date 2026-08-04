@@ -28211,6 +28211,7 @@ function joinPathList(paths) {
 // src/shared.ts
 var servePIDKey = "zbServePID";
 var serveLogFilePathKey = "zbServeLogFile";
+var versionKey = "zbVersion";
 
 // src/exec.ts
 var import_node_child_process = __toESM(require("node:child_process"));
@@ -28329,7 +28330,7 @@ function archiveBaseName(name) {
   } else if (platform_exports.isLinux && platform_exports.arch === "x64") {
     asset = releaseAssets.find(({ name }) => name.includes("x86_64-unknown-linux"));
   }
-  if (!asset) {
+  if (!release || !asset) {
     setFailed(`No download found for ${platform_exports.arch}-${platform_exports.platform} version ${release?.tagName || version}`);
     return;
   }
@@ -28352,6 +28353,7 @@ function archiveBaseName(name) {
       return exec2(installerPath, ["--single-user", ...installerArgs]);
     }
   });
+  saveState(versionKey, release.tagName);
   const installerStorePath = import_node_path4.default.join(zbExtractedFolderPath, archiveBaseName(asset.name), "store");
   const objectNames = await import_promises4.default.readdir(installerStorePath);
   const zbStoreDirectory = platform_exports.isWindows ? "C:\\zb\\store" : "/opt/zb/store";

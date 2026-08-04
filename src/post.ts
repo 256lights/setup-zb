@@ -9,9 +9,10 @@ import process from 'node:process';
 import stream from 'node:stream/promises';
 
 import * as core from '@actions/core';
+import semver from 'semver';
 
 import { waitForProcessToExit } from './exec';
-import { serveLogFilePathKey, servePIDKey } from './shared';
+import { serveLogFilePathKey, servePIDKey, versionKey } from './shared';
 
 function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -32,16 +33,19 @@ function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
   });
 }
 
-async function shutDownServer(pid: number): Promise<void> {
+async function shutDownServer(pid: number, version?: string): Promise<void> {
   // Start with graceful shutdown: instruct the server to stop accepting new work,
   // and exit after finishing any current work.
+  const v = semver.coerce(version);
+  const supportsSIGUSR2 = v && semver.gte(v, '0.2.0-beta1');
+  const firstSignal = supportsSIGUSR2 ? 'SIGUSR2' : 'SIGTERM';
   try {
-    process.kill(pid, 'SIGUSR2');
+    process.kill(pid, firstSignal);
   } catch {
     // Already exited.
     return;
   }
-  core.info(`Sent SIGUSR2 to process ${pid}`);
+  core.info(`Sent ${firstSignal} to process ${pid}`);
 
   // After 30 minutes (enough time to upload everything), send SIGTERM.
   const abort = new AbortController();
@@ -73,7 +77,7 @@ async function shutDownServer(pid: number): Promise<void> {
   const pidString = core.getState(servePIDKey);
   if (pidString) {
     const pid = parseInt(pidString, 10);
-    await shutDownServer(pid);
+    await shutDownServer(pid, core.getState(versionKey));
     core.info('Server shut down.');
   }
 

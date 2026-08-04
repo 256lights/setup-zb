@@ -3,3 +3,4 @@
 
 export const servePIDKey = 'zbServePID';
 export const serveLogFilePathKey = 'zbServeLogFile';
+export const versionKey = 'zbVersion';

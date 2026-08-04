@@ -12,7 +12,7 @@ import { getOctokit } from '@actions/github';
 import { downloadTool, extractTar, extractZip } from '@actions/tool-cache';
 
 import { createConfigurationFiles, getConfigurationInputs, joinPathList } from './config';
-import { serveLogFilePathKey, servePIDKey } from './shared';
+import { serveLogFilePathKey, servePIDKey, versionKey } from './shared';
 import { exec, startDaemon } from './exec';
 import { temporaryFileName } from './temporary';
 
@@ -111,7 +111,7 @@ function archiveBaseName(name: string): string {
   } else if (core.platform.isLinux && core.platform.arch === 'x64') {
     asset = releaseAssets.find(({ name }) => name.includes('x86_64-unknown-linux'))
   }
-  if (!asset) {
+  if (!release || !asset) {
     core.setFailed(`No download found for ${core.platform.arch}-${core.platform.platform} version ${release?.tagName || version}`);
     return;
   }
@@ -135,6 +135,7 @@ function archiveBaseName(name: string): string {
       return exec(installerPath, ['--single-user', ...installerArgs]);
     }
   });
+  core.saveState(versionKey, release.tagName);
 
   const installerStorePath = path.join(zbExtractedFolderPath, archiveBaseName(asset.name), 'store');
   const objectNames = await fs.readdir(installerStorePath);
