@@ -5,6 +5,7 @@ This action sets up zb for use in GitHub Actions by:
 - Downloading a zb release.
 - Running the zb installer.
 - Adding the zb command-line interface to the `PATH`.
+- Optionally configuring zb.
 - Optionally starting `zb serve`.
 
 ```yaml
