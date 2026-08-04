@@ -3,6 +3,7 @@
 
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import process from 'node:process';
 import { tmpdir } from 'node:os';
 import { describe, it } from 'node:test';
 
@@ -15,8 +16,9 @@ describe('temporaryFileName', () => {
   });
 
   it('uses a directory if given', () => {
-    const got = temporaryFileName('/foo', '');
-    assert.ok(got.startsWith('/foo' + path.sep), `got ${got}; want to start with /foo${path.sep}`);
+    const dir = process.platform === 'win32' ? 'C:\\foo' : '/foo';
+    const got = temporaryFileName(dir, '');
+    assert.ok(got.startsWith(dir + path.sep), `got ${got}; want to start with ${dir}${path.sep}`);
   });
 
   it('returns a unique name each call', () => {

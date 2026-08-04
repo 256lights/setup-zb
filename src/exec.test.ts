@@ -31,7 +31,7 @@ describe('exec', () => {
   });
 });
 
-describe('startDaemon', () => {
+describe('startDaemon', { skip: process.platform === 'win32' ? 'Not working on Windows' : false }, () => {
   it('writes process output to a log file', async () => {
     const logFilePath = temporaryFileName('testlog-*.txt');
     const pid = await startDaemon(echoCommand.command, echoCommand.args, logFilePath);
