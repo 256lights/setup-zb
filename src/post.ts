@@ -10,6 +10,7 @@ import stream from 'node:stream/promises';
 
 import * as core from '@actions/core';
 
+import { waitForProcessToExit } from './exec';
 import { serveLogFilePathKey, servePIDKey } from './shared';
 
 function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
@@ -28,31 +29,6 @@ function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
       }
       resolve();
     }, delay);
-  });
-}
-
-function waitForProcessToExit(pid: number, abortSignal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let id: NodeJS.Timeout;
-    const abortListener = () => {
-      clearInterval(id);
-      reject(abortSignal?.reason);
-    };
-    if (abortSignal) {
-      abortSignal.addEventListener('abort', abortListener);
-    }
-
-    id = setInterval(() => {
-      try {
-        process.kill(pid, 0);
-      } catch {
-        if (abortSignal) {
-          abortSignal.removeEventListener('abort', abortListener);
-        }
-        clearInterval(id);
-        resolve();
-      }
-    }, 500);
   });
 }
 

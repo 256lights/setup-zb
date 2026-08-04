@@ -1,8 +1,9 @@
 import fs from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import * as core from '@actions/core';
+
+import { mkdirTemp } from './temporary';
 
 interface ZBConfiguration {
   server?: ZBServerConfiguration;
@@ -59,7 +60,7 @@ export async function createConfigurationFiles(inputs: ConfigurationInputs): Pro
   }
 
   const configFiles = [];
-  const configDir = await fs.mkdtemp(path.join(tmpdir(), 'zb-config-'));
+  const configDir = await mkdirTemp('zb-config-');
 
   if (hasGenerated(inputs)) {
     const serverConfig: ZBServerConfiguration = {};
