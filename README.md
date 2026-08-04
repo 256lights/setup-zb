@@ -15,6 +15,8 @@ This action sets up zb for use in GitHub Actions by:
 
 ## Reference
 
+All inputs are optional.
+
 ```yaml
 - uses: 256lights/setup-zb@v1
   with:
@@ -38,6 +40,27 @@ This action sets up zb for use in GitHub Actions by:
             "publicKey": "s4dh0QI8VqQGpVkH+K1NqNSggFTqlehoXBZYdJ93IS8="
           }
         ]
+      }
+
+    # Binary cache discovery document for downloading.
+    server-download-discovery: >-
+      {
+        "_links": {
+          "https://zb-build.dev/api/rel/narinfo": [
+            {"href": "https://www.example.com/{digest}.narinfo", "templated": true}
+          ]
+        }
+      }
+
+    # Binary cache discovery document for uploading.
+    server-upload-discovery: >-
+      {
+        "_links": {
+          "https://zb-build.dev/api/rel/nar": {"href": "https://www.example.com/{digest}.nar", "templated": true},
+          "https://zb-build.dev/api/rel/narinfo": [
+            {"href": "https://www.example.com/{digest}.narinfo", "templated": true}
+          ]
+        }
       }
 
     # Signing key to use in the server.
