@@ -130,7 +130,7 @@ function archiveBaseName(name: string): string {
       '--no-launchd',
     ];
     if (useRoot) {
-      return exec('sudo', ['--non-interactive', installerPath, ...installerArgs]);
+      return exec('sudo', ['--non-interactive', '--preserve-env', installerPath, ...installerArgs]);
     } else {
       return exec(installerPath, ['--single-user', ...installerArgs]);
     }
@@ -169,7 +169,7 @@ function archiveBaseName(name: string): string {
     let pid: number | undefined;
     try {
       pid = useRoot ?
-        await startDaemon('sudo', ['--non-interactive', zbExe, ...serveArgs], logFilePath) :
+        await startDaemon('sudo', ['--non-interactive', '--preserve-env', zbExe, ...serveArgs], logFilePath) :
         await startDaemon(zbExe, serveArgs, logFilePath);
     } catch (err) {
       core.error(typeof err === 'string' || err instanceof Error ?
