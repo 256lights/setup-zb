@@ -28348,7 +28348,7 @@ function archiveBaseName(name) {
       "--no-launchd"
     ];
     if (useRoot) {
-      return exec2("sudo", ["--non-interactive", installerPath, ...installerArgs]);
+      return exec2("sudo", ["--non-interactive", "--preserve-env", installerPath, ...installerArgs]);
     } else {
       return exec2(installerPath, ["--single-user", ...installerArgs]);
     }
@@ -28382,7 +28382,7 @@ function archiveBaseName(name) {
     ];
     let pid;
     try {
-      pid = useRoot ? await startDaemon("sudo", ["--non-interactive", zbExe, ...serveArgs], logFilePath) : await startDaemon(zbExe, serveArgs, logFilePath);
+      pid = useRoot ? await startDaemon("sudo", ["--non-interactive", "--preserve-env", zbExe, ...serveArgs], logFilePath) : await startDaemon(zbExe, serveArgs, logFilePath);
     } catch (err) {
       error(typeof err === "string" || err instanceof Error ? err : Object.prototype.toString.call(err));
     }
