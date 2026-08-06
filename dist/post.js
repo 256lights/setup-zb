@@ -8055,10 +8055,10 @@ var require_fixed_queue = __commonJS({
         this.head.push(data);
       }
       shift() {
-        const tail = this.tail;
-        const next = tail.shift();
-        if (tail.isEmpty() && tail.next !== null) {
-          this.tail = tail.next;
+        const tail2 = this.tail;
+        const next = tail2.shift();
+        if (tail2.isEmpty() && tail2.next !== null) {
+          this.tail = tail2.next;
         }
         return next;
       }
@@ -9310,7 +9310,7 @@ var require_readable = __commonJS({
   "node_modules/undici/lib/api/readable.js"(exports2, module2) {
     "use strict";
     var assert = require("node:assert");
-    var { Readable } = require("node:stream");
+    var { Readable: Readable2 } = require("node:stream");
     var { RequestAbortedError, NotSupportedError, InvalidArgumentError, AbortError } = require_errors();
     var util = require_util();
     var { ReadableStreamFrom } = require_util();
@@ -9322,7 +9322,7 @@ var require_readable = __commonJS({
     var kContentLength = /* @__PURE__ */ Symbol("kContentLength");
     var noop = () => {
     };
-    var BodyReadable = class extends Readable {
+    var BodyReadable = class extends Readable2 {
       constructor({
         resume,
         abort,
@@ -9664,7 +9664,7 @@ var require_api_request = __commonJS({
   "node_modules/undici/lib/api/api-request.js"(exports2, module2) {
     "use strict";
     var assert = require("node:assert");
-    var { Readable } = require_readable();
+    var { Readable: Readable2 } = require_readable();
     var { InvalidArgumentError, RequestAbortedError } = require_errors();
     var util = require_util();
     var { getResolveErrorBodyCallback } = require_util3();
@@ -9759,7 +9759,7 @@ var require_api_request = __commonJS({
         const parsedHeaders = responseHeaders === "raw" ? util.parseHeaders(rawHeaders) : headers;
         const contentType = parsedHeaders["content-type"];
         const contentLength = parsedHeaders["content-length"];
-        const res = new Readable({
+        const res = new Readable2({
           resume,
           abort,
           contentType,
@@ -10074,7 +10074,7 @@ var require_api_pipeline = __commonJS({
   "node_modules/undici/lib/api/api-pipeline.js"(exports2, module2) {
     "use strict";
     var {
-      Readable,
+      Readable: Readable2,
       Duplex,
       PassThrough
     } = require("node:stream");
@@ -10088,7 +10088,7 @@ var require_api_pipeline = __commonJS({
     var { addSignal, removeSignal } = require_abort_signal();
     var assert = require("node:assert");
     var kResume = /* @__PURE__ */ Symbol("resume");
-    var PipelineRequest = class extends Readable {
+    var PipelineRequest = class extends Readable2 {
       constructor() {
         super({ autoDestroy: true });
         this[kResume] = null;
@@ -10105,7 +10105,7 @@ var require_api_pipeline = __commonJS({
         callback(err);
       }
     };
-    var PipelineResponse = class extends Readable {
+    var PipelineResponse = class extends Readable2 {
       constructor(resume) {
         super({ autoDestroy: true });
         this[kResume] = resume;
@@ -13430,7 +13430,7 @@ var require_fetch = __commonJS({
       subresourceSet
     } = require_constants3();
     var EE = require("node:events");
-    var { Readable, pipeline, finished } = require("node:stream");
+    var { Readable: Readable2, pipeline, finished } = require("node:stream");
     var { addAbortListener, isErrored, isReadable, bufferToLowerCasedHeaderName } = require_util();
     var { dataURLProcessor, serializeAMimeType, minimizeSupportedMimeType } = require_data_url();
     var { getGlobalDispatcher } = require_global2();
@@ -14331,7 +14331,7 @@ var require_fetch = __commonJS({
                 headersList.append(bufferToLowerCasedHeaderName(rawHeaders[i]), rawHeaders[i + 1].toString("latin1"), true);
               }
               location = headersList.get("location", true);
-              this.body = new Readable({ read: resume });
+              this.body = new Readable2({ read: resume });
               const decoders = [];
               const willFollow = location && request.redirect === "follow" && redirectStatusSet.has(status);
               if (request.method !== "HEAD" && request.method !== "CONNECT" && !nullBodyStatus.includes(status) && !willFollow) {
@@ -17213,7 +17213,7 @@ var require_permessage_deflate = __commonJS({
     var { createInflateRaw, Z_DEFAULT_WINDOWBITS } = require("node:zlib");
     var { isValidClientWindowBits } = require_util7();
     var { MessageSizeExceededError } = require_errors();
-    var tail = Buffer.from([0, 0, 255, 255]);
+    var tail2 = Buffer.from([0, 0, 255, 255]);
     var kBuffer = /* @__PURE__ */ Symbol("kBuffer");
     var kLength = /* @__PURE__ */ Symbol("kLength");
     var PerMessageDeflate = class {
@@ -17270,7 +17270,7 @@ var require_permessage_deflate = __commonJS({
         }
         this.#inflate.write(chunk);
         if (fin) {
-          this.#inflate.write(tail);
+          this.#inflate.write(tail2);
         }
         this.#inflate.flush(() => {
           if (!this.#inflate) {
@@ -20822,9 +20822,9 @@ var require_semver2 = __commonJS({
 });
 
 // src/post.ts
-var import_promises = __toESM(require("node:fs/promises"));
+var import_promises2 = __toESM(require("node:fs/promises"));
 var import_node_process = __toESM(require("node:process"));
-var import_promises2 = __toESM(require("node:stream/promises"));
+var import_promises3 = __toESM(require("node:stream/promises"));
 
 // node_modules/@actions/core/lib/command.js
 var os = __toESM(require("os"), 1);
@@ -21246,33 +21246,6 @@ var platform = import_os2.default.platform();
 var arch = import_os2.default.arch();
 
 // node_modules/@actions/core/lib/core.js
-var __awaiter2 = function(thisArg, _arguments, P, generator) {
-  function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve) {
-      resolve(value);
-    });
-  }
-  return new (P || (P = Promise))(function(resolve, reject) {
-    function fulfilled(value) {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function rejected(value) {
-      try {
-        step(generator["throw"](value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function step(result) {
-      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-    }
-    step((generator = generator.apply(thisArg, _arguments || [])).next());
-  });
-};
 var ExitCode;
 (function(ExitCode2) {
   ExitCode2[ExitCode2["Success"] = 0] = "Success";
@@ -21286,18 +21259,6 @@ function startGroup(name) {
 }
 function endGroup() {
   issue("endgroup");
-}
-function group(name, fn) {
-  return __awaiter2(this, void 0, void 0, function* () {
-    startGroup(name);
-    let result;
-    try {
-      result = yield fn();
-    } finally {
-      endGroup();
-    }
-    return result;
-  });
 }
 function getState(name) {
   return process.env[`STATE_${name}`] || "";
@@ -21336,6 +21297,112 @@ var servePIDKey = "zbServePID";
 var serveLogFilePathKey = "zbServeLogFile";
 var versionKey = "zbVersion";
 
+// src/tail.ts
+var import_promises = __toESM(require("node:fs/promises"));
+var import_node_stream = require("node:stream");
+function tail(filename, signal) {
+  return new TailReadable(filename, { signal });
+}
+var TailReadable = class extends import_node_stream.Readable {
+  filename;
+  abortController;
+  signal;
+  fd;
+  watcher;
+  constructor(filename, options) {
+    super({
+      // Match FileHandle.createReadStream default.
+      highWaterMark: 64 * 1024,
+      ...options
+    });
+    this.filename = filename;
+    this.abortController = new AbortController();
+    const signals = [this.abortController.signal];
+    if (options.signal) {
+      signals.push(options.signal);
+    }
+    this.signal = AbortSignal.any(signals);
+  }
+  _construct(callback) {
+    (async () => {
+      try {
+        [this.fd, this.watcher] = await Promise.all([
+          import_promises.default.open(this.filename),
+          import_promises.default.watch(this.filename, {
+            signal: this.signal
+          })
+        ]);
+        callback();
+      } catch (err) {
+        callback(toError(err));
+      }
+    })();
+  }
+  _read(size) {
+    (async () => {
+      try {
+        const buffer = Buffer.alloc(size);
+        for (; ; ) {
+          const { bytesRead } = await this.fd.read({ buffer });
+          if (bytesRead > 0) {
+            this.push(buffer.subarray(0, bytesRead));
+            return;
+          }
+          if (!this.watcher) {
+            this.push(null);
+            return;
+          }
+          const result = await this.watcher.next();
+          if (result.done) {
+            delete this.watcher;
+            continue;
+          }
+          if (result.value.eventType !== "change") {
+            throw new Error(`Unhandled ${result.value.eventType} file event`);
+          }
+        }
+      } catch (err) {
+        this.destroy(toError(err));
+      }
+    })();
+  }
+  _destroy(error, callback) {
+    (async () => {
+      const promises3 = [];
+      if (this.fd) {
+        promises3.push(this.fd.close());
+      }
+      if (this.watcher) {
+        const w = this.watcher;
+        this.abortController.abort();
+        promises3.push((async () => {
+          for (; ; ) {
+            const { done } = await w.next();
+            if (done) {
+              return;
+            }
+          }
+        })());
+      }
+      const results = await Promise.allSettled(promises3);
+      if (error) {
+        callback(error);
+        return;
+      }
+      for (const r of results) {
+        if (r.status === "rejected" && r.reason) {
+          callback(toError(r.reason));
+          return;
+        }
+      }
+      callback();
+    })();
+  }
+};
+function toError(x) {
+  return x instanceof Error ? x : new Error(Object.prototype.toString.call(x));
+}
+
 // src/post.ts
 function sleep(delay, abortSignal) {
   return new Promise((resolve, reject) => {
@@ -21355,7 +21422,7 @@ function sleep(delay, abortSignal) {
     }, delay);
   });
 }
-async function shutDownServer(pid, version) {
+async function shutDownServer(pid, logFilePath, version) {
   const v = import_semver.default.coerce(version);
   const supportsSIGUSR2 = v && import_semver.default.gte(v, "0.2.0-beta1");
   const firstSignal = supportsSIGUSR2 ? "SIGUSR2" : "SIGTERM";
@@ -21366,6 +21433,7 @@ async function shutDownServer(pid, version) {
   }
   info(`Sent ${firstSignal} to process ${pid}`);
   const abort = new AbortController();
+  const tailPromise = logFilePath ? pipeLogs(tail(logFilePath, abort.signal)) : Promise.resolve();
   const exitPromise = waitForProcessToExit(pid, abort.signal);
   const waitPromise = sleep(30 * 60 * 1e3, abort.signal);
   try {
@@ -21381,30 +21449,34 @@ async function shutDownServer(pid, version) {
     } catch {
       return;
     }
-    info(`Sent SIGTERM to process ${pid}`);
     await exitPromise;
   } finally {
     abort.abort();
-    await Promise.allSettled([exitPromise, waitPromise]);
+    await Promise.allSettled([exitPromise, waitPromise, tailPromise]);
+  }
+}
+async function pipeLogs(source) {
+  startGroup("Server logs");
+  try {
+    await import_promises3.default.pipeline(source, import_node_process.default.stdout, { end: false });
+  } finally {
+    endGroup();
   }
 }
 (async () => {
-  const pidString = getState(servePIDKey);
-  if (pidString) {
-    const pid = parseInt(pidString, 10);
-    await shutDownServer(pid, getState(versionKey));
-    info("Server shut down.");
-  }
   const logFilePath = getState(serveLogFilePathKey);
-  if (logFilePath) {
-    try {
-      await group("Server logs", async () => {
-        const f = await import_promises.default.open(logFilePath);
-        await import_promises2.default.pipeline(f.createReadStream(), import_node_process.default.stdout, { end: false });
-      });
-    } finally {
-      await import_promises.default.unlink(logFilePath);
+  try {
+    const pidString = getState(servePIDKey);
+    if (pidString) {
+      const pid = parseInt(pidString, 10);
+      await shutDownServer(pid, logFilePath, getState(versionKey));
+      info("Server shut down.");
+    } else if (logFilePath) {
+      const f = await import_promises2.default.open(logFilePath);
+      await pipeLogs(f.createReadStream());
     }
+  } finally {
+    await import_promises2.default.unlink(logFilePath);
   }
 })();
 /**
