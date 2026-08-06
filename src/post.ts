@@ -6,6 +6,7 @@
 
 import fs from 'node:fs/promises';
 import process from 'node:process';
+import type { Readable } from 'node:stream';
 import stream from 'node:stream/promises';
 
 import * as core from '@actions/core';
@@ -13,6 +14,7 @@ import semver from 'semver';
 
 import { waitForProcessToExit } from './exec';
 import { serveLogFilePathKey, servePIDKey, versionKey } from './shared';
+import { tail } from './tail';
 
 function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -33,7 +35,7 @@ function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
   });
 }
 
-async function shutDownServer(pid: number, version?: string): Promise<void> {
+async function shutDownServer(pid: number, logFilePath?: string, version?: string): Promise<void> {
   // Start with graceful shutdown: instruct the server to stop accepting new work,
   // and exit after finishing any current work.
   const v = semver.coerce(version);
@@ -49,6 +51,10 @@ async function shutDownServer(pid: number, version?: string): Promise<void> {
 
   // After 30 minutes (enough time to upload everything), send SIGTERM.
   const abort = new AbortController();
+  const tailPromise =
+    logFilePath
+      ? pipeLogs(tail(logFilePath, abort.signal))
+      : Promise.resolve();
   const exitPromise = waitForProcessToExit(pid, abort.signal);
   const waitPromise = sleep(30 * 60 * 1000, abort.signal);
   try {
@@ -65,31 +71,35 @@ async function shutDownServer(pid: number, version?: string): Promise<void> {
       // Already exited.
       return;
     }
-    core.info(`Sent SIGTERM to process ${pid}`);
     await exitPromise;
   } finally {
     abort.abort();
-    await Promise.allSettled([exitPromise, waitPromise]);
+    await Promise.allSettled([exitPromise, waitPromise, tailPromise]);
+  }
+}
+
+async function pipeLogs(source: Readable): Promise<void> {
+  core.startGroup('Server logs');
+  try {
+    await stream.pipeline(source, process.stdout, { end: false });
+  } finally {
+    core.endGroup();
   }
 }
 
 (async () => {
-  const pidString = core.getState(servePIDKey);
-  if (pidString) {
-    const pid = parseInt(pidString, 10);
-    await shutDownServer(pid, core.getState(versionKey));
-    core.info('Server shut down.');
-  }
-
   const logFilePath = core.getState(serveLogFilePathKey);
-  if (logFilePath) {
-    try {
-      await core.group('Server logs', async () => {
-        const f = await fs.open(logFilePath);
-        await stream.pipeline(f.createReadStream(), process.stdout, { end: false });
-      });
-    } finally {
-      await fs.unlink(logFilePath);
+  try {
+    const pidString = core.getState(servePIDKey);
+    if (pidString) {
+      const pid = parseInt(pidString, 10);
+      await shutDownServer(pid, logFilePath, core.getState(versionKey));
+      core.info('Server shut down.');
+    } else if (logFilePath) {
+      const f = await fs.open(logFilePath);
+      await pipeLogs(f.createReadStream());
     }
+  } finally {
+    await fs.unlink(logFilePath);
   }
 })();
