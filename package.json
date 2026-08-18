@@ -10,12 +10,12 @@
     "setup"
   ],
   "private": true,
-  "type": "commonjs",
-  "main": "dist/main.js",
+  "type": "module",
+  "main": "dist/main.cjs",
   "scripts": {
-    "build": "node build.mjs",
+    "build": "node build.ts",
     "typecheck": "tsc",
-    "test": "node test.mjs"
+    "test": "node test.ts"
   },
   "engines": {
     "node": ">=24.0.0"

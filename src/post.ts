@@ -12,9 +12,9 @@ import stream from 'node:stream/promises';
 import * as core from '@actions/core';
 import semver from 'semver';
 
-import { waitForProcessToExit } from './exec';
-import { serveLogFilePathKey, servePIDKey, versionKey } from './shared';
-import { tail } from './tail';
+import { waitForProcessToExit } from './exec.ts';
+import { serveLogFilePathKey, servePIDKey, versionKey } from './shared.ts';
+import { tail } from './tail.js';
 
 function sleep(delay: number, abortSignal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {

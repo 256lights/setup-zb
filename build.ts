@@ -14,4 +14,5 @@ await esbuild.build({
   target: ['node24.0'],
   format: 'cjs',
   outdir: 'dist',
+  outExtension: { '.js': '.cjs' },
 });

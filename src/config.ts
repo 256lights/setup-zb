@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import * as core from '@actions/core';
 
-import { mkdirTemp } from './temporary';
+import { mkdirTemp } from './temporary.ts';
 
 interface ZBConfiguration {
   server?: ZBServerConfiguration;
