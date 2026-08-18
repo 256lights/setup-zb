@@ -4,9 +4,11 @@
   ],
   "compilerOptions": {
     "noEmit": true,
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
     "strict": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "module": "nodenext",
+    "customConditions": ["import"],
+    "lib": ["ES2024"],
+    "target": "ES2024"
   }
 }

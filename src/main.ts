@@ -15,6 +15,7 @@ import { createConfigurationFiles, getConfigurationInputs, joinPathList } from '
 import { serveLogFilePathKey, servePIDKey, versionKey } from './shared';
 import { exec, startDaemon } from './exec';
 import { temporaryFileName } from './temporary';
+import { collectServeArguments } from './serve';
 
 interface Release {
   tagName: string;
@@ -140,32 +141,33 @@ function archiveBaseName(name: string): string {
   const installerStorePath = path.join(zbExtractedFolderPath, archiveBaseName(asset.name), 'store');
   const objectNames = await fs.readdir(installerStorePath);
   const zbStoreDirectory = core.platform.isWindows ? 'C:\\zb\\store' : '/opt/zb/store';
-  const zbBins = await Promise.all(
+  const zbStoreObjects = await Promise.all(
     objectNames
       .filter((name) => name.match(/-zb-/))
       .map(async (name) => {
-        const binPath = path.join(zbStoreDirectory, name, 'bin');
+        const storePath = path.join(zbStoreDirectory, name);
+        const binPath = path.join(storePath, 'bin');
         try {
           await fs.lstat(binPath);
         } catch {
           return null;
         }
-        return binPath;
+        return storePath;
       })
   );
-  for (const binPath of zbBins) {
-    if (binPath) {
-      core.addPath(binPath);
+  let firstZBStoreObject: string | undefined
+  for (const storePath of zbStoreObjects) {
+    if (storePath) {
+      core.addPath(path.join(storePath, 'bin'));
+      if (!firstZBStoreObject) {
+        firstZBStoreObject = storePath;
+      }
     }
   }
 
-  if (core.getBooleanInput('zb-serve') && zbBins[0]) {
+  if (core.getBooleanInput('zb-serve') && firstZBStoreObject) {
     const logFilePath = temporaryFileName('zb-serve-*.txt');
-    const zbExe = path.join(zbBins[0], 'zb');
-    const serveArgs = [
-      'serve',
-      `--sandbox=${useRoot && core.platform.isLinux ? '1' : '0'}`,
-    ];
+    const { command: zbExe, args: serveArgs } = await collectServeArguments(firstZBStoreObject, { useRoot });
     let pid: number | undefined;
     try {
       pid = useRoot ?
