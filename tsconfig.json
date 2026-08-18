@@ -8,6 +8,7 @@
     "noImplicitAny": true,
     "module": "nodenext",
     "customConditions": ["import"],
+    "allowImportingTsExtensions": true,
     "lib": ["ES2024"],
     "target": "ES2024"
   }

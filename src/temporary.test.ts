@@ -7,7 +7,7 @@ import process from 'node:process';
 import { tmpdir } from 'node:os';
 import { describe, it } from 'node:test';
 
-import { temporaryFileName } from './temporary';
+import { temporaryFileName } from './temporary.ts';
 
 describe('temporaryFileName', () => {
   it('uses tmpdir by default', () => {

@@ -6,8 +6,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { collectServeArguments, type ServeArgsOptions } from './serve';
-import { mkdirTemp } from './temporary';
+import { collectServeArguments, type ServeArgsOptions } from './serve.ts';
+import { mkdirTemp } from './temporary.ts';
 
 describe('collectServeArguments', () => {
   let tempDir: string;

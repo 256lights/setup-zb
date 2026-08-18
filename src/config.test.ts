@@ -3,8 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { before, describe, it } from 'node:test';
 
-import { createConfigurationFiles, joinPathList } from './config';
-import type { ConfigurationInputs } from './config';
+import { createConfigurationFiles, joinPathList, type ConfigurationInputs } from './config.ts';
 
 describe('createConfigurationFiles', () => {
   const emptyInputs: Readonly<ConfigurationInputs> = {

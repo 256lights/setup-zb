@@ -11,11 +11,11 @@ import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';
 import { downloadTool, extractTar, extractZip } from '@actions/tool-cache';
 
-import { createConfigurationFiles, getConfigurationInputs, joinPathList } from './config';
-import { serveLogFilePathKey, servePIDKey, versionKey } from './shared';
-import { exec, startDaemon } from './exec';
-import { temporaryFileName } from './temporary';
-import { collectServeArguments } from './serve';
+import { createConfigurationFiles, getConfigurationInputs, joinPathList } from './config.ts';
+import { serveLogFilePathKey, servePIDKey, versionKey } from './shared.ts';
+import { exec, startDaemon } from './exec.ts';
+import { temporaryFileName } from './temporary.ts';
+import { collectServeArguments } from './serve.ts';
 
 interface Release {
   tagName: string;

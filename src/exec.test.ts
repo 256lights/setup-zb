@@ -6,8 +6,8 @@ import fs from 'node:fs/promises';
 import process from 'node:process';
 import { describe, it } from 'node:test';
 
-import { exec, startDaemon, waitForProcessToExit } from './exec';
-import { temporaryFileName } from './temporary';
+import { exec, startDaemon, waitForProcessToExit } from './exec.ts';
+import { temporaryFileName } from './temporary.ts';
 
 const trueCommand = process.platform === 'win32'
   ? {command: 'powershell.exe', args: ['-Command', '']}
